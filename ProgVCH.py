@@ -43,46 +43,35 @@ def rotate_and_plot_images(ax, angle, movement, arm_img_radial, arm_img_flexion,
     if movement in ["Desviación radial", "Desviación cubital"]:
         arm_img = arm_img_radial
         hand_img = hand_img_radial
-        arm_x, arm_y = [0, 0], [-0.8, 0.0]  # Antebrazo en eje Y
         arm_extent = [-0.5, 0.5, -0.8, -0.02]
+        rotation_origin = (0, -0.02)  # Origen de rotación para desviación radial/cubital
     else:
         arm_img = arm_img_flexion
         hand_img = hand_img_flexion
-        arm_x, arm_y = [-0.8, 0.0], [0, 0]  # Antebrazo en eje X
         arm_extent = [-0.8, -0.02, -0.5, 0.5]
+        rotation_origin = (-0.02, 0)  # Origen de rotación para flexión/extensión
 
     # Dibujar el antebrazo
-    ax.plot(arm_x, arm_y, color='blue', lw=2, label="Antebrazo")
-    if arm_img:
-        ax.imshow(arm_img, extent=arm_extent, zorder=2, aspect='auto')
+    ax.imshow(arm_img, extent=arm_extent, zorder=2, aspect='auto')
 
-    # Coordenadas de la mano rotada según el movimiento
-    if movement == "Desviación radial":
-        hand_x = -0.5 * np.sin(radians)
-        hand_y = 0.5 * np.cos(radians)
-    elif movement == "Desviación cubital":
-        hand_x = 0.5 * np.sin(radians)
-        hand_y = 0.5 * np.cos(radians)
-    elif movement == "Flexión":
-        hand_x = 0.5 * np.cos(radians)
-        hand_y = -0.5 * np.sin(radians)
-    elif movement == "Extensión":
-        hand_x = 0.5 * np.cos(radians)
-        hand_y = 0.5 * np.sin(radians)
+    # Ajustar coordenadas de la mano según la rotación
+    hand_width = 0.3
+    hand_height = 0.4
+    hand_center = np.array([0, 0]) + np.array(rotation_origin)
 
-    ax.quiver(arm_x[-1], arm_y[-1], hand_x, hand_y, angles='xy', scale_units='xy', scale=1.0, color='red', label="Mano")
+    # Calcular posición de la mano después de la rotación
+    rotation_mat = rotation_matrix(angle)
+    hand_corners = np.array([[-hand_width / 2, -hand_height / 2],
+                             [hand_width / 2, -hand_height / 2],
+                             [hand_width / 2, hand_height / 2],
+                             [-hand_width / 2, hand_height / 2]])
+    rotated_corners = (rotation_mat @ hand_corners.T).T + hand_center
 
-    # Rotar y agregar la imagen de la mano
-    if hand_img:
-        rotation_mat = rotation_matrix(angle)
-        hand_center = np.array([hand_x, hand_y])
-        hand_extent = np.array([[-0.15, -0.15], [0.15, -0.15], [0.15, 0.15], [-0.15, 0.15]])  # Tamaño ajustado
-        rotated_extent = (rotation_mat @ hand_extent.T).T + hand_center
-
-        ax.imshow(hand_img.rotate(-angle, resample=Image.BICUBIC), extent=[
-            rotated_extent[:, 0].min(), rotated_extent[:, 0].max(),
-            rotated_extent[:, 1].min(), rotated_extent[:, 1].max()
-        ], zorder=3, aspect='auto')
+    # Dibujar la imagen de la mano rotada
+    ax.imshow(hand_img.rotate(-angle, resample=Image.BICUBIC), extent=[
+        rotated_corners[:, 0].min(), rotated_corners[:, 0].max(),
+        rotated_corners[:, 1].min(), rotated_corners[:, 1].max()
+    ], zorder=3, aspect='auto')
 
 # Gráfico para movimientos
 if movement in limits:
@@ -108,11 +97,9 @@ if movement in limits:
     ax.set_xlabel("Y")
     ax.set_ylabel("X")
     ax.grid(True)
-    ax.legend()
     ax.set_aspect('equal')  # Escala uniforme
     ax.set_title(f"Movimiento: {movement} (Ángulo: {angle}°)")
 
     st.pyplot(fig)
 else:
     st.write("Selecciona un movimiento para visualizar.")
-
