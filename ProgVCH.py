@@ -16,7 +16,7 @@ movement = st.sidebar.radio(
 )
 
 # Cargar imágenes desde el directorio del proyecto
-arm_image_radial = Image.open("arm_radial.png")
+arm_image_radial = Image.open("arm_radial.jpg")
 arm_image_flexion = Image.open("arm_flexion.png")
 hand_image_radial = Image.open("hand_radial.png")
 hand_image_flexion = Image.open("hand_flexion.png")
