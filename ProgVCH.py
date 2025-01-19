@@ -44,12 +44,12 @@ def rotate_and_plot_images(ax, angle, movement, arm_img_radial, arm_img_flexion,
         arm_img = arm_img_radial
         hand_img = hand_img_radial
         arm_extent = [-0.5, 0.5, -0.8, -0.02]
-        rotation_origin = (0, -0.02)  # Origen de rotación para desviación radial/cubital
+        rotation_origin = (0, 0)  # Origen de rotación para desviación radial/cubital
     else:
         arm_img = arm_img_flexion
         hand_img = hand_img_flexion
         arm_extent = [-0.8, -0.02, -0.5, 0.5]
-        rotation_origin = (-0.02, 0)  # Origen de rotación para flexión/extensión
+        rotation_origin = (0, 0)  # Origen de rotación para flexión/extensión
 
     # Dibujar el antebrazo
     ax.imshow(arm_img, extent=arm_extent, zorder=2, aspect='auto')
