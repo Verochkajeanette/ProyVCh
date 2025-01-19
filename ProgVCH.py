@@ -76,7 +76,7 @@ def rotate_and_plot_images(ax, angle, movement, arm_img_radial, arm_img_flexion,
     if hand_img:
         rotation_mat = rotation_matrix(angle)
         hand_center = np.array([hand_x, hand_y])
-        hand_extent = np.array([[-0.3, -0.5], [0.3, -0.5], [0.15, 0.15], [-0.15, 0.15]])  # Tamaño aumentado
+        hand_extent = np.array([[-0.3, -0.5], [0.3, -0.5], [0.3, 0.5], [-0.3, 0.5]])  # Tamaño aumentado
         rotated_extent = (rotation_mat @ hand_extent.T).T + hand_center
 
         ax.imshow(hand_img.rotate(-angle, resample=Image.BICUBIC), extent=[
