@@ -15,16 +15,11 @@ movement = st.sidebar.radio(
     ("Desviación radial", "Desviación cubital", "Flexión", "Extensión")
 )
 
-# Subir imágenes para antebrazo y mano
-uploaded_arm_radial = st.sidebar.file_uploader("Sube una imagen del antebrazo para desviación radial/cubital (PNG o JPG)", type=["png", "jpg", "jpeg"])
-uploaded_arm_flexion = st.sidebar.file_uploader("Sube una imagen del antebrazo para flexión/extensión (PNG o JPG)", type=["png", "jpg", "jpeg"])
-uploaded_hand_radial = st.sidebar.file_uploader("Sube una imagen de la mano para desviación radial/cubital (PNG o JPG)", type=["png", "jpg", "jpeg"])
-uploaded_hand_flexion = st.sidebar.file_uploader("Sube una imagen de la mano para flexión/extensión (PNG o JPG)", type=["png", "jpg", "jpeg"])
-
-arm_image_radial = Image.open(uploaded_arm_radial) if uploaded_arm_radial else None
-arm_image_flexion = Image.open(uploaded_arm_flexion) if uploaded_arm_flexion else None
-hand_image_radial = Image.open(uploaded_hand_radial) if uploaded_hand_radial else None
-hand_image_flexion = Image.open(uploaded_hand_flexion) if uploaded_hand_flexion else None
+# Cargar imágenes desde el directorio del proyecto
+arm_image_radial = Image.open("arm_radial.png")
+arm_image_flexion = Image.open("arm_flexion.png")
+hand_image_radial = Image.open("hand_radial.png")
+hand_image_flexion = Image.open("hand_flexion.png")
 
 # Límites de los movimientos (AAOS)
 limits = {
@@ -44,7 +39,7 @@ def rotation_matrix(angle):
 def rotate_and_plot_images(ax, angle, movement, arm_img_radial, arm_img_flexion, hand_img_radial, hand_img_flexion):
     radians = np.radians(angle)
 
-    # Seleccionar la imagen del antebrazo y mano según el movimiento
+    # Seleccionar la imagen del antebrazo según el movimiento
     if movement in ["Desviación radial", "Desviación cubital"]:
         arm_img = arm_img_radial
         hand_img = hand_img_radial
@@ -80,17 +75,11 @@ def rotate_and_plot_images(ax, angle, movement, arm_img_radial, arm_img_flexion,
     # Rotar y agregar la imagen de la mano
     if hand_img:
         rotation_mat = rotation_matrix(angle)
+        hand_center = np.array([hand_x, hand_y])
+        hand_extent = np.array([[-0.15, -0.15], [0.15, -0.15], [0.15, 0.15], [-0.15, 0.15]])  # Tamaño ajustado
+        rotated_extent = (rotation_mat @ hand_extent.T).T + hand_center
 
-        # Ajustar el centro lógico de la imagen al punto (0, 0)
-        hand_width, hand_height = hand_img.size
-        hand_extent = np.array([[-0.1, -0.1], [0.1, -0.1], [0.1, 0.1], [-0.1, 0.1]])
-        rotated_extent = (rotation_mat @ hand_extent.T).T + np.array([hand_x, hand_y])
-
-        # Reescalar la imagen de la mano para mayor tamaño
-        scaled_size = (int(hand_width * 1.5), int(hand_height * 1.5))  # Escalar 1.5 veces
-        hand_img_rescaled = hand_img.resize(scaled_size, resample=Image.BICUBIC)
-
-        ax.imshow(hand_img_rescaled.rotate(-angle, resample=Image.BICUBIC), extent=[
+        ax.imshow(hand_img.rotate(-angle, resample=Image.BICUBIC), extent=[
             rotated_extent[:, 0].min(), rotated_extent[:, 0].max(),
             rotated_extent[:, 1].min(), rotated_extent[:, 1].max()
         ], zorder=3, aspect='auto')
@@ -121,7 +110,6 @@ if movement in limits:
     ax.grid(True)
     ax.legend()
     ax.set_aspect('equal')  # Escala uniforme
-    ax.autoscale_view()  # Ajustar límites automáticamente
     ax.set_title(f"Movimiento: {movement} (Ángulo: {angle}°)")
 
     st.pyplot(fig)
